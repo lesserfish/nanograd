@@ -1,4 +1,4 @@
-module Main where
+module Expression where
 import System.Random
 
 
@@ -244,7 +244,3 @@ ngrad (Signum _node _lhs) _name = if name _node == _name then grad _node else (n
 
 gradient :: Expression -> Expression -> Float
 gradient expr1 expr2 = ngrad expr1 (name . node $ expr2)
-
-
-main :: IO ()
-main = putStrLn "Main"

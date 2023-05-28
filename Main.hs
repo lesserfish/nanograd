@@ -1,62 +1,54 @@
 module Main where
 import System.Random
 
+
+-- Generates a name so you don't have to manually name your variables.
 generateUniqueID :: IO String
 generateUniqueID = do
   randomInt <- randomIO :: IO Int
   return $ show randomInt
 
+data Node = Node {name :: String, value :: Float, grad :: Float} deriving Show
+data Expression =   Value {node :: Node} |
+                    Sum {node :: Node, lhs :: Expression, rhs :: Expression} |
+                    Mul {node :: Node, lhs :: Expression, rhs :: Expression} deriving Show
 
-class Operation a where
-    evaluate :: a -> Float
-    grad :: (Operation b) => a -> b -> Float
-    uuid :: a -> String
+param :: Float -> IO Expression
+param _value = do
+    _name <- generateUniqueID
+    let _node = Node _name _value 1
+    let _expr = Value _node
+    return $ _expr
 
-data Value = Value {value :: Float, name :: String} deriving Show
-instance Operation Value where
-  evaluate = value
-  grad x z = if uuid x == uuid z then 1 else 0
-  uuid = name
+xbackpropagate :: Expression -> Float -> Expression
+xbackpropagate (Value _node) _grad = Value (Node (name _node) (value _node) _grad)
+xbackpropagate (Sum _node _lhs _rhs) _grad = Sum (Node (name _node) (value _node) _grad) (xbackpropagate _lhs _rgrad) (xbackpropagate _rhs _lgrad)
+    where _rgrad = _grad; _lgrad = _grad;
+xbackpropagate (Mul _node _lhs _rhs) _grad = Mul (Node (name _node) (value _node) _grad) (xbackpropagate _lhs _lgrad) (xbackpropagate _rhs _rgrad)
+    where _lgrad = _grad * (value . node $ _rhs); _rgrad = _grad * (value . node $ _lhs);
 
-float :: Float -> IO Value
-float v = do
-    n <- generateUniqueID
-    let out = Value v n
-    return(out)
-
-
-data Sum a b = Sum a b deriving Show
-instance (Operation a, Operation b) => Operation (Sum a b) where
-  evaluate (Sum x y) = evaluate x + evaluate y
-  grad (Sum x y) z = (grad x z) + (grad y z)
-  uuid _ = ""
+backpropagate :: Expression -> Expression
+backpropagate expr = xbackpropagate expr 1
 
 
-(|+|) :: (Operation a, Operation b) => a -> b -> (Sum a b)
-(|+|) x y = Sum x y
+xsum :: Expression -> Expression -> Expression
+xsum expr1 expr2 = Sum (Node _name _value 1) expr1 expr2
+    where _value = (value . node $ expr1) + (value . node $ expr2); _name = "(" ++ (name . node $ expr1) ++ " + " ++ (name . node $ expr2) ++ ")"
 
+xmul :: Expression -> Expression -> Expression
+xmul expr1 expr2 = Mul (Node _name _value 1) expr1 expr2
+    where _value = (value . node $ expr1) * (value . node $ expr2); _name = "(" ++ (name . node $ expr1) ++ " * "++ (name . node $ expr2) ++ ")"
 
-data Mul a b = Mul a b deriving Show
-instance (Operation a, Operation b) => Operation (Mul a b) where
-  evaluate (Mul x y) = evaluate x * evaluate y
-  grad (Mul x y) z = (grad x z)*(evaluate y) + (evaluate x)*(grad y z)
-  uuid _ = ""
+evaluate :: Expression -> Float
+evaluate = value . node
 
+ngrad :: Expression -> String -> Float
+ngrad (Value _node) _name = if name _node == _name then grad _node else 0
+ngrad (Sum _node _lhs _rhs) _name = if name _node == _name then grad _node else ((ngrad _lhs _name) + (ngrad _rhs _name))
+ngrad (Mul _node _lhs _rhs) _name = if name _node == _name then grad _node else ((ngrad _lhs _name) + (ngrad _rhs _name))
 
-(|*|) :: (Operation a, Operation b) => a -> b -> (Mul a b)
-(|*|) x y = Mul x y
-
-data Div a b = Div a b deriving Show
-instance (Operation a, Operation b) => Operation (Div a b) where
-  evaluate (Div x y) = evaluate x / evaluate y
-  grad (Div x y) z = ((grad x z)*(evaluate y) - (evaluate x)*(grad y z)) / ((evaluate y)**2)
-  uuid _ = ""
-
-
-(|/|) :: (Operation a, Operation b) => a -> b -> (Div a b)
-(|/|) x y = Div x y
-
+gradient :: Expression -> Expression -> Float
+gradient expr1 expr2 = ngrad expr1 (name . node $ expr2)
 
 main :: IO ()
-main = do
-    return ()
+main = putStrLn "Main"

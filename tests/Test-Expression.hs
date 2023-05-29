@@ -77,6 +77,22 @@ main = hspec $ do
             (mse dxda expected_dxda) `shouldSatisfy` (< 0.01)
             (mse dxdb expected_dxdb) `shouldSatisfy` (< 0.01)
             return()
+    describe "Double backpropagation still works" $ do
+        it "checks even more backpropagation" $ do
+            a <- param 0.3
+            b <- param 0.5
+            let c = asin(a * b)
+            let d = cos(c ** 2)
+            let e = tanh(d)
+            let y = backpropagate e
+            let x = backpropagate y
+            let dxda = gradient x a
+            let dxdb = gradient x b
+            let expected_dxda = -0.0014504327859911142
+            let expected_dxdb = -0.0008702597061756809
+            (mse dxda expected_dxda) `shouldSatisfy` (< 0.01)
+            (mse dxdb expected_dxdb) `shouldSatisfy` (< 0.01)
+            return()
 
         return()
 

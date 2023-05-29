@@ -19,7 +19,10 @@ library
   exposed-modules:     Expression
   build-depends:       base >= 4.13 && < 4.14,
                        random >= 1.2.1.1,
-                       matrix >= 0.3.6.1
+                       matrix >= 0.3.6.1,
+                       hspec >= 2.11.1
+
+  hs-source-dirs:      src/
   default-language:    Haskell2010
 
 executable nanograd
@@ -28,6 +31,21 @@ executable nanograd
   -- other-extensions:
   build-depends:       base >=4.13 && <4.14,
                        random >= 1.2.1.1,
-                       matrix >= 0.3.6.1
-  -- hs-source-dirs:
+                       matrix >= 0.3.6.1,
+                       hspec >= 2.11.1
+  hs-source-dirs:      src/
   default-language:    Haskell2010
+
+test-suite spec
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     tests
+  main-is:            Test-Expression.hs
+  other-modules:       Expression
+  build-depends:       base >= 4.13 && < 4.14,
+                       random >= 1.2.1.1,
+                       matrix >= 0.3.6.1,
+                       hspec >= 2.11.1
+
+  hs-source-dirs:      src/
+  default-language:   Haskell2010
+

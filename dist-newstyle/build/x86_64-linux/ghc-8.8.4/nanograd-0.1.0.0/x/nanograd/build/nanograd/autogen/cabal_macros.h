@@ -22,6 +22,17 @@
   (major1) == 4 && (major2) == 13 && (minor) <= 0)
 #endif /* MIN_VERSION_base */
 
+/* package hspec-2.11.1 */
+#ifndef VERSION_hspec
+#define VERSION_hspec "2.11.1"
+#endif /* VERSION_hspec */
+#ifndef MIN_VERSION_hspec
+#define MIN_VERSION_hspec(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  11 || \
+  (major1) == 2 && (major2) == 11 && (minor) <= 1)
+#endif /* MIN_VERSION_hspec */
+
 /* package matrix-0.3.6.1 */
 #ifndef VERSION_matrix
 #define VERSION_matrix "0.3.6.1"

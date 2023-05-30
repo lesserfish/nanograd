@@ -38,6 +38,13 @@ param _value = do
     let _expr = Value _node
     return $ _expr
 
+collapse :: Expression -> IO Expression
+collapse expr = do
+    _name <- generateUniqueID
+    let _node = Node _name (value . node $ expr) 1
+    let _expr = Value _node
+    return $ _expr
+
 xbackpropagate :: Expression -> Float -> Expression
 
 xbackpropagate (Value _node) _grad = Value (Node (name _node) (value _node) _grad)
@@ -244,3 +251,4 @@ ngrad (Signum _node _lhs) _name = if name _node == _name then grad _node else (n
 
 gradient :: Expression -> Expression -> Float
 gradient expr1 expr2 = ngrad expr1 (name . node $ expr2)
+

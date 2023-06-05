@@ -61,3 +61,4 @@ main = loop 1000 initialInput
       let error = sqrt ((dw1 - z1)**2 + (dw2 - z2)**2 + (dw3 - z3)**2)
       putStrLn $ printf "%.3f, %.3f, %.3f - error: %.3f" (dw1) (dw2) (dw3) error
       loop (n - 1) output
+

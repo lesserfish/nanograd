@@ -18,7 +18,8 @@ extra-source-files:  CHANGELOG.md
 
 executable nanograd
   main-is:             Main.hs
-  other-modules:       Expression
+  other-modules:       Expression,
+                       NN
   -- other-extensions:
   build-depends:       base >=4.13 && <4.14,
                        random >= 1.2.1.1,

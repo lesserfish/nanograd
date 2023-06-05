@@ -29,7 +29,7 @@ data Expression =   Value {node :: Node} |
                     Acosh {node :: Node, lhs :: Expression} |
                     Atanh {node :: Node, lhs :: Expression} |
                     Abs {node :: Node, lhs :: Expression} |
-                    Signum {node :: Node, lhs :: Expression} deriving Show
+                    Signum {node :: Node, lhs :: Expression} 
 
 param :: Float -> IO Expression
 param _value = do
@@ -38,12 +38,11 @@ param _value = do
     let _expr = Value _node
     return $ _expr
 
-collapse :: Expression -> IO Expression
-collapse expr = do
-    _name <- generateUniqueID
-    let _node = Node _name (value . node $ expr) 1
-    let _expr = Value _node
-    return $ _expr
+noname :: Float -> Expression
+noname _value = Value (Node "" _value 1.0)
+
+collapse :: Expression -> Expression
+collapse expr = Value (Node (name . node $ expr) (value . node $ expr) 1)
 
 xbackpropagate :: Expression -> Float -> Expression
 
@@ -219,6 +218,9 @@ instance Floating Expression where
     asinh = xasinh
     acosh = xacosh
     atanh = xatanh
+
+instance Show Expression where
+    show exp = show (evaluate exp)
 
 relu :: Expression -> Expression
 relu = xrelu

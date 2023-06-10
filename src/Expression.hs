@@ -10,7 +10,7 @@ generateUniqueID = do
   return $ show randomInt
 
 hashString :: String -> String
-hashString = show . hash
+hashString = id
 
 
 data Node = Node {name :: String, value :: Float, grad :: Float} deriving Show
@@ -34,7 +34,78 @@ data Expression =   Value {node :: Node} |
                     Acosh {node :: Node, lhs :: Expression} |
                     Atanh {node :: Node, lhs :: Expression} |
                     Abs {node :: Node, lhs :: Expression} |
-                    Signum {node :: Node, lhs :: Expression} 
+                    Signum {node :: Node, lhs :: Expression}
+
+
+{--
+fullName :: Expression -> String
+fullName (Value _node) = if (name _node == "") then (show . value $ _node) else "(" ++ (show . name $ _node) ++ ")"
+fullName (Sum _node _lhs _rhs) = "(" ++ (fullName _lhs) ++ " + " ++ (fullName _rhs) ++ ")"
+fullName (Sub _node _lhs _rhs) = "(" ++ (fullName _lhs) ++ " - " ++ (fullName _rhs) ++ ")"
+fullName (Mul _node _lhs _rhs) = "(" ++ (fullName _lhs) ++ " * " ++ (fullName _rhs) ++ ")"
+fullName (Div _node _lhs _rhs) = "(" ++ (fullName _lhs) ++ " / " ++ (fullName _rhs) ++ ")"
+fullName (Pow _node _lhs _rhs) = "(" ++ (fullName _lhs) ++ " ** " ++ (fullName _rhs) ++ ")"
+fullName (ReLU _node _lhs)  = "relu(" ++ (fullName _lhs) ++ ")"
+fullName (Exp _node _lhs) = "exp(" ++ (fullName _lhs) ++ ")"
+fullName (Log _node _lhs) = "log(" ++ (fullName _lhs) ++ ")"
+fullName (Sin _node _lhs) = "sin(" ++ (fullName _lhs) ++ ")"
+fullName (Cos _node _lhs) = "cos(" ++ (fullName _lhs) ++ ")"
+fullName (Asin _node _lhs) = "asin(" ++ (fullName _lhs) ++ ")"
+fullName (Acos _node _lhs) = "acos(" ++ (fullName _lhs) ++ ")"
+fullName (Sinh _node _lhs) = "sinh(" ++ (fullName _lhs) ++ ")"
+fullName (Cosh _node _lhs) = "cosh(" ++ (fullName _lhs) ++ ")"
+fullName (Asinh _node _lhs) = "asinh(" ++ (fullName _lhs) ++ ")"
+fullName (Acosh _node _lhs) = "acosh(" ++ (fullName _lhs) ++ ")"
+fullName (Atanh _node _lhs) = "atanh(" ++ (fullName _lhs) ++ ")"
+fullName (Abs _node _lhs) = "abs(" ++ (fullName _lhs) ++ ")"
+fullName (Signum _node _lhs) = "signum(" ++ (fullName _lhs) ++ ")"
+
+
+fullValue :: Expression -> String
+fullValue (Value _node) = "(" ++ (show . value $ _node) ++ ")"
+fullValue (Sum _node _lhs _rhs) = "(" ++ (fullValue _lhs) ++ " + " ++ (fullValue _rhs) ++ ")"
+fullValue (Sub _node _lhs _rhs) = "(" ++ (fullValue _lhs) ++ " - " ++ (fullValue _rhs) ++ ")"
+fullValue (Mul _node _lhs _rhs) = "(" ++ (fullValue _lhs) ++ " * " ++ (fullValue _rhs) ++ ")"
+fullValue (Div _node _lhs _rhs) = "(" ++ (fullValue _lhs) ++ " / " ++ (fullValue _rhs) ++ ")"
+fullValue (Pow _node _lhs _rhs) = "(" ++ (fullValue _lhs) ++ " ** " ++ (fullValue _rhs) ++ ")"
+fullValue (ReLU _node _lhs)  = "relu(" ++ (fullValue _lhs) ++ ")"
+fullValue (Exp _node _lhs) = "exp(" ++ (fullValue _lhs) ++ ")"
+fullValue (Log _node _lhs) = "log(" ++ (fullValue _lhs) ++ ")"
+fullValue (Sin _node _lhs) = "sin(" ++ (fullValue _lhs) ++ ")"
+fullValue (Cos _node _lhs) = "cos(" ++ (fullValue _lhs) ++ ")"
+fullValue (Asin _node _lhs) = "asin(" ++ (fullValue _lhs) ++ ")"
+fullValue (Acos _node _lhs) = "acos(" ++ (fullValue _lhs) ++ ")"
+fullValue (Sinh _node _lhs) = "sinh(" ++ (fullValue _lhs) ++ ")"
+fullValue (Cosh _node _lhs) = "cosh(" ++ (fullValue _lhs) ++ ")"
+fullValue (Asinh _node _lhs) = "asinh(" ++ (fullValue _lhs) ++ ")"
+fullValue (Acosh _node _lhs) = "acosh(" ++ (fullValue _lhs) ++ ")"
+fullValue (Atanh _node _lhs) = "atanh(" ++ (fullValue _lhs) ++ ")"
+fullValue (Abs _node _lhs) = "abs(" ++ (fullValue _lhs) ++ ")"
+fullValue (Signum _node _lhs) = "signum(" ++ (fullValue _lhs) ++ ")"
+
+fullNode :: Expression -> String
+fullNode (Value _node) = "\n" ++ show _node ++ "\n"
+fullNode (Sum _node _lhs _rhs) = (fullNode _lhs) ++ (fullNode _rhs)
+fullNode (Sub _node _lhs _rhs) = (fullNode _lhs) ++ (fullNode _rhs)
+fullNode (Mul _node _lhs _rhs) = (fullNode _lhs) ++ (fullNode _rhs)
+fullNode (Div _node _lhs _rhs) = (fullNode _lhs) ++ (fullNode _rhs)
+fullNode (Pow _node _lhs _rhs) = (fullNode _lhs) ++ (fullNode _rhs)
+fullNode (ReLU _node _lhs)  = (fullNode _lhs)
+fullNode (Exp _node _lhs) = (fullNode _lhs)
+fullNode (Log _node _lhs) = (fullNode _lhs)
+fullNode (Sin _node _lhs) = (fullNode _lhs)
+fullNode (Cos _node _lhs) = (fullNode _lhs)
+fullNode (Asin _node _lhs) = (fullNode _lhs)
+fullNode (Acos _node _lhs) = (fullNode _lhs)
+fullNode (Sinh _node _lhs) = (fullNode _lhs)
+fullNode (Cosh _node _lhs) = (fullNode _lhs)
+fullNode (Asinh _node _lhs) = (fullNode _lhs)
+fullNode (Acosh _node _lhs) = (fullNode _lhs)
+fullNode (Atanh _node _lhs) = (fullNode _lhs)
+fullNode (Abs _node _lhs) = (fullNode _lhs)
+fullNode (Signum _node _lhs) = (fullNode _lhs) 
+--}
+
 
 param :: Float -> IO Expression
 param _value = do

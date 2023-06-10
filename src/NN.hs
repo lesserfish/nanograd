@@ -69,16 +69,19 @@ deviation network error (input, expected_output) = (error output expected_output
     evaluation = forwardPass network input;
 
 overallDeviation :: Network -> (Matrix Expression -> Matrix Expression -> Expression) -> [(Matrix Expression, Matrix Expression)] -> Expression
-overallDeviation network error lio = sum (fmap (deviation network error) lio)
+overallDeviation network error lio = den * sum (fmap (deviation network error) lio) where
+    den = 1.0 / (fromIntegral . length $ lio) :: Expression
+
 
 updateWeights :: Expression -> (Matrix Expression) -> Float -> IO (Matrix Expression)
 updateWeights err mat rate = do
-    let bp = backpropagate err :: Expression
+    let bp = backpropagate (backpropagate err) :: Expression  -- This is a bug. A hefty bug. A gnarly sickly bug. TODO: FIX. What the fuck. I don't get why this happens.
     let gmat = (fmap (gradient bp) mat) :: Matrix Float
     let fmat = (fmap evaluate mat) :: Matrix Float
     let nmat = fmat - (fmap (*rate) gmat)
     let iomat = (fmap param nmat) :: Matrix (IO Expression)
     emat <- sequence iomat :: IO (Matrix Expression)
+--    if isNaN (getElem 1 1 gmat) then putStrLn $ "\nNAMES\n"  ++ show (fmap (name . node) mat) ++ "\nVALUES\n" ++ (show mat) ++ "\nEXPRESSION\n" ++ (fullName bp) ++ "\nEVALUES\n" ++ (fullValue bp) ++ "\nNODES\n" ++ (fullNode bp) else putStr ""
     return emat
 
 
@@ -111,7 +114,6 @@ train n net (i, o) rate = do
     o <- train (n - 1) nnet (i, o) rate
     return o
 
-
 mtrain :: Int -> Network -> [(Matrix Expression, Matrix Expression)] -> Float -> IO Network
 mtrain 0 net _ _ = return net
 
@@ -122,6 +124,20 @@ mtrain n net arr rate = do
     o <- mtrain (n - 1) nnet arr rate
     return o
 
+
+{-
+debugtrain :: Int -> Network -> [(Matrix Expression, Matrix Expression)] -> Float -> IO Network
+debugtrain 0 net _ _ = return net
+
+debugtrain n net arr rate = do
+    let err = overallDeviation net mse arr
+    putStrLn $ "Iteration " ++ (show n) ++ "   Error: " ++ show (evaluate err)
+    nnet <- updateNetwork err net rate
+    o <- debugtrain (n - 1) nnet arr rate
+    let oerr = overallDeviation o mse arr
+    out <- if isNaN (evaluate oerr) then putStrLn "ERROR" >> return net else return o
+    return out
+-}
 
 generateTrainingSet :: Network -> Int -> (Float, Float) -> IO [(Matrix Expression, Matrix Expression)]
 generateTrainingSet network n maxmin

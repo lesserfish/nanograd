@@ -21,7 +21,7 @@ executable nanograd
   other-modules:       Expression,
                        NN
   -- other-extensions:
-  build-depends:       base >=4.13 && <4.14,
+  build-depends:       base >=4.16.4.0,
                        random >= 1.2.1.1,
                        matrix >= 0.3.6.1,
                        hspec >= 2.11.1,

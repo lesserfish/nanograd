@@ -5,14 +5,14 @@ import Data.Matrix
 
 main :: IO()
 main = do
-    network <- initializeNetwork 1 >>= pushLayer 1 id
-    training_set <- generateTrainingSet network 1 ((-10.0), 10.0)
-    let rate = 0.001
-    let iterations = 5000
+    network <- initializeNetwork 1 >>= pushLayer 16 tanh >>= pushLayer 16 tanh >>= pushLayer 1 tanh
+    training_set <- generateTrainingSet network 10 ((-10.0), 10.0)
+    let rate = 0.01
+    let iterations = 100
     
-    model <- initializeNetwork 1 >>= pushLayer 1 id
+    model <- initializeNetwork 1 >>= pushLayer 16 tanh >>= pushLayer 16 tanh >>= pushLayer 1 tanh
     
-    result <- debugtrain iterations model training_set rate
+    result <- mtrain iterations model training_set rate
 
     putStrLn $ "Original Weights: \n" ++ (show . weights . layer $ network) 
     putStrLn $ "Estimated Weights: \n" ++ (show . weights . layer $ result) 

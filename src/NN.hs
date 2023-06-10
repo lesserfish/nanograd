@@ -75,7 +75,6 @@ overallDeviation network error lio = den * sum (fmap (deviation network error) l
 
 updateWeights :: Expression -> (Matrix Expression) -> Float -> IO (Matrix Expression)
 updateWeights err mat rate = do
-    --let bp = backpropagate (backpropagate err) :: Expression  -- This is a bug. A hefty bug. A gnarly sickly bug. TODO: FIX. What the fuck. I don't get why this happens.
     let bp = backpropagate err :: Expression  -- This is a bug. A hefty bug. A gnarly sickly bug. TODO: FIX. What the fuck. I don't get why this happens.
     let gmat = (fmap (gradient bp) mat) :: Matrix Float
     let fmat = (fmap evaluate mat) :: Matrix Float
@@ -124,20 +123,6 @@ mtrain n net arr rate = do
     nnet <- updateNetwork err net rate
     o <- mtrain (n - 1) nnet arr rate
     return o
-
-
-
-debugtrain :: Int -> Network -> [(Matrix Expression, Matrix Expression)] -> Float -> IO Network
-debugtrain 0 net _ _ = return net
-
-debugtrain n net arr rate = do
-    let err = overallDeviation net mse arr
-    putStrLn $ "Iteration " ++ (show n) ++ "   Error: " ++ show (evaluate err)
-    nnet <- updateNetwork err net rate
-    o <- debugtrain (n - 1) nnet arr rate
-    let oerr = overallDeviation o mse arr
-    out <- if isNaN (evaluate oerr) then putStrLn "ERROR" >> return net else return o
-    return out
 
 
 generateTrainingSet :: Network -> Int -> (Float, Float) -> IO [(Matrix Expression, Matrix Expression)]

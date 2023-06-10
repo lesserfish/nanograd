@@ -123,8 +123,8 @@ mtrain n net arr rate = do
     return o
 
 
-generateTrainingSetA :: Network -> Int -> (Float, Float) -> IO [(Matrix Expression, Matrix Expression)]
-generateTrainingSetA network n maxmin
+generateTrainingSet :: Network -> Int -> (Float, Float) -> IO [(Matrix Expression, Matrix Expression)]
+generateTrainingSet network n maxmin
     | n <= 0 = do
         let isize = inputSize network
         ainput <- runif isize maxmin
@@ -138,5 +138,5 @@ generateTrainingSetA network n maxmin
         let input = fromList 1 isize ainput
         let output = nodes . layer $ (forwardPass network input)
         let io = [(input, output)]
-        rest <- generateTrainingSetA network (n - 1) maxmin
+        rest <- generateTrainingSet network (n - 1) maxmin
         return $ io ++ rest

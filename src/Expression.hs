@@ -10,7 +10,7 @@ generateUniqueID = do
   return $ show randomInt
 
 hashString :: String -> String
-hashString = id
+hashString = show . hash
 
 
 data Node = Node {name :: String, value :: Float, grad :: Float} deriving Show
@@ -34,7 +34,7 @@ data Expression =   Value {node :: Node} |
                     Acosh {node :: Node, lhs :: Expression} |
                     Atanh {node :: Node, lhs :: Expression} |
                     Abs {node :: Node, lhs :: Expression} |
-                    Signum {node :: Node, lhs :: Expression}
+                    Signum {node :: Node, lhs :: Expression} 
 
 
 {--
@@ -133,7 +133,7 @@ xbackpropagate (Mul _node _lhs _rhs) _grad = Mul (Node (name _node) (value _node
 xbackpropagate (Div _node _lhs _rhs) _grad = Div (Node (name _node) (value _node) _grad) (xbackpropagate _lhs _lgrad) (xbackpropagate _rhs _rgrad)
     where _lgrad = _grad/(value . node $ _rhs); _rgrad = _grad * (-1.0 * (value . node $ _lhs))/((value . node $ _rhs)**2)
 
-xbackpropagate (Pow _node _lhs _rhs) _grad = Div (Node (name _node) (value _node) _grad) (xbackpropagate _lhs _lgrad) (xbackpropagate _rhs _rgrad)
+xbackpropagate (Pow _node _lhs _rhs) _grad = Pow (Node (name _node) (value _node) _grad) (xbackpropagate _lhs _lgrad) (xbackpropagate _rhs _rgrad)
     where _lgrad = _grad * (b * (a ** (b - 1))); _rgrad = _grad * ((a**b)*(log a)); a = (value . node $ _lhs); b = (value . node $ _rhs)
 
 xbackpropagate (ReLU _node _lhs) _grad = ReLU (Node (name _node) (value _node) _grad) (xbackpropagate _lhs _lgrad)

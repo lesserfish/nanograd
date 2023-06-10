@@ -2,15 +2,17 @@ module Main where
 import NN
 import Expression
 import Data.Matrix
+import System.Random
 
 main :: IO()
 main = do
-    network <- initializeNetwork 1 >>= pushLayer 16 tanh >>= pushLayer 16 tanh >>= pushLayer 1 tanh
-    training_set <- generateTrainingSet network 10 ((-10.0), 10.0)
+    setStdGen (mkStdGen 42)
+    network <- initializeNetwork 1 >>= pushLayer 3 tanh >>= pushLayer 1 tanh
+    training_set <- generateTrainingSet network 15 ((-10.0), 10.0)
     let rate = 0.01
-    let iterations = 100
+    let iterations = 400
     
-    model <- initializeNetwork 1 >>= pushLayer 16 tanh >>= pushLayer 16 tanh >>= pushLayer 1 tanh
+    model <- initializeNetwork 1 >>= pushLayer 16 tanh >>= pushLayer 1 tanh
     
     result <- mtrain iterations model training_set rate
 

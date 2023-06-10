@@ -4,7 +4,6 @@ import System.Random
 import Expression
 import Data.Matrix
 
-
 runif :: Int -> Float -> Float -> IO [Expression]
 runif n l h = do
   randomValues <- replicateM n (randomRIO (l, h) :: IO Float)
@@ -12,8 +11,19 @@ runif n l h = do
   return randomExpressions
 
 
-data Layer = Layer {nodes :: Matrix Expression, weights :: Matrix Expression, bias :: Expression} deriving Show
+data Layer = Layer {nodes :: Matrix Expression, weights :: Matrix Expression, bias :: Expression}
 data Network = ILayer {layer :: Layer} | HLayer {layer :: Layer, ltail :: Network, activation :: (Expression -> Expression)}
+
+
+instance Show Layer where
+    show (Layer _nodes _weights _bias) = show _nodes
+
+instance Show Network where
+    show (ILayer l) = "\nLayer:\nInput Nodes: \n" ++ show l
+    show (HLayer l n a) = "\nLayer:\nNodes: \n" ++ show l ++ "\n Weights: \n" ++ show (weights  l) ++ show n 
+
+params :: [Float] -> IO (Matrix Expression)
+params x = sequence . ((fromList 1 (length x)) . (map param)) $ x
 
 toVector :: Layer -> Matrix Expression
 toVector l = (nodes l) <|> (fromList 1 1 [bias l])
@@ -54,8 +64,45 @@ deviation network error (input, expected_output) = (error output expected_output
     output = nodes . layer $ evaluation;
     evaluation = forwardPass network input;
 
-overall_deviation :: Network -> (Matrix Expression -> Matrix Expression -> Expression) -> [(Matrix Expression, Matrix Expression)] -> Expression
-overall_deviation network error tests =  l * s where
-    s = sum ea;
-    l = 1.0 / (fromIntegral (length ea) :: Expression);
-    ea = fmap (deviation network error) tests;
+overallDeviation :: Network -> (Matrix Expression -> Matrix Expression -> Expression) -> [(Matrix Expression, Matrix Expression)] -> Expression
+overallDeviation network error lio = sum (fmap (deviation network error) lio)
+
+updateWeights :: Expression -> (Matrix Expression) -> Float -> IO (Matrix Expression)
+updateWeights err mat rate = do
+    let bp = backpropagate err :: Expression
+    let gmat = (fmap (gradient bp) mat) :: Matrix Float
+    let fmat = (fmap evaluate mat) :: Matrix Float
+    let nmat = fmat - (fmap (*rate) gmat)
+    let iomat = (fmap param nmat) :: Matrix (IO Expression)
+    emat <- sequence iomat :: IO (Matrix Expression)
+    return emat
+
+
+updateLayer :: Expression -> Layer -> Float -> IO Layer
+updateLayer err l rate = do
+    nmat <- updateWeights err (weights l) rate
+    let olay = Layer (nodes l) nmat (bias l)
+    return olay
+
+updateNetwork :: Expression -> Network -> Float -> IO Network
+updateNetwork err (ILayer l) rate = do
+    nlay <- updateLayer err l rate
+    let onet = ILayer nlay
+    return onet
+
+updateNetwork err (HLayer l t act) rate = do
+    nlay <- updateLayer err l rate
+    ntail <- updateNetwork err t rate
+    let onet = HLayer nlay ntail act
+    return onet
+
+
+train :: Int -> Network -> (Matrix Expression, Matrix Expression) -> Float -> IO Network
+train 0 net _ _ = return net
+
+train n net (i, o) rate = do
+    let err = deviation net mse (i, o)
+    putStrLn $ "Iteration " ++ (show n) ++ "   Error: " ++ show (evaluate err)
+    nnet <- updateNetwork err net rate
+    o <- train (n - 1) nnet (i, o) rate
+    return o

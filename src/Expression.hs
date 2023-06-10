@@ -1,5 +1,6 @@
 module Expression where
 import System.Random
+import Data.Hashable
 
 
 -- Generates a name so you don't have to manually name your variables.
@@ -7,6 +8,10 @@ generateUniqueID :: IO String
 generateUniqueID = do
   randomInt <- randomIO :: IO Int
   return $ show randomInt
+
+hashString :: String -> String
+hashString = show . hash
+
 
 data Node = Node {name :: String, value :: Float, grad :: Float} deriving Show
 data Expression =   Value {node :: Node} |
@@ -37,9 +42,6 @@ param _value = do
     let _node = Node _name _value 1
     let _expr = Value _node
     return $ _expr
-
-noname :: Float -> Expression
-noname _value = Value (Node "" _value 1.0)
 
 collapse :: Expression -> Expression
 collapse expr = Value (Node (name . node $ expr) (value . node $ expr) 1)
@@ -113,83 +115,83 @@ backpropagate expr = xbackpropagate expr 1
 
 xsum :: Expression -> Expression -> Expression
 xsum expr1 expr2 = Sum (Node _name _value 1) expr1 expr2
-    where _value = (value . node $ expr1) + (value . node $ expr2); _name = "(" ++ (name . node $ expr1) ++ " + " ++ (name . node $ expr2) ++ ")"
+    where _value = (value . node $ expr1) + (value . node $ expr2); _name = hashString ("(" ++ (name . node $ expr1) ++ " + " ++ (name . node $ expr2) ++ ")")
 
 xsub :: Expression -> Expression -> Expression
 xsub expr1 expr2 = Sub (Node _name _value 1) expr1 expr2
-    where _value = (value . node $ expr1) - (value . node $ expr2); _name = "(" ++ (name . node $ expr1) ++ " - " ++ (name . node $ expr2) ++ ")"
+    where _value = (value . node $ expr1) - (value . node $ expr2); _name = hashString ("(" ++ (name . node $ expr1) ++ " - " ++ (name . node $ expr2) ++ ")")
 
 xmul :: Expression -> Expression -> Expression
 xmul expr1 expr2 = Mul (Node _name _value 1) expr1 expr2
-    where _value = (value . node $ expr1) * (value . node $ expr2); _name = "(" ++ (name . node $ expr1) ++ " * "++ (name . node $ expr2) ++ ")"
+    where _value = (value . node $ expr1) * (value . node $ expr2); _name = hashString ("(" ++ (name . node $ expr1) ++ " * "++ (name . node $ expr2) ++ ")")
 
 xdiv :: Expression -> Expression -> Expression
 xdiv expr1 expr2 = Div (Node _name _value 1) expr1 expr2
-    where _value = (value . node $ expr1) / (value . node $ expr2); _name = "(" ++ (name . node $ expr1) ++ " / "++ (name . node $ expr2) ++ ")"
+    where _value = (value . node $ expr1) / (value . node $ expr2); _name = hashString ("(" ++ (name . node $ expr1) ++ " / "++ (name . node $ expr2) ++ ")")
 
 xpow :: Expression -> Expression -> Expression
 xpow expr1 expr2 = Pow (Node _name _value 1) expr1 expr2
-    where _value = (value . node $ expr1) ** (value . node $ expr2); _name = "(" ++ (name . node $ expr1) ++ " ** "++ (name . node $ expr2) ++ ")"
+    where _value = (value . node $ expr1) ** (value . node $ expr2); _name = hashString ("(" ++ (name . node $ expr1) ++ " ** "++ (name . node $ expr2) ++ ")")
 
 xrelu :: Expression -> Expression
 xrelu expr1 = ReLU (Node _name _value 1) expr1
-    where _value = max 0 (value . node $ expr1); _name = "relu(" ++ (name . node $ expr1) ++ ")"
+    where _value = max 0 (value . node $ expr1); _name = hashString ("relu(" ++ (name . node $ expr1) ++ ")")
 
 xexp :: Expression -> Expression
 xexp expr1 = Exp (Node _name _value 1) expr1
-    where _value = exp (value . node $ expr1); _name = "exp(" ++ (name . node $ expr1) ++ ")"
+    where _value = exp (value . node $ expr1); _name = hashString ("exp(" ++ (name . node $ expr1) ++ ")")
 
 xlog :: Expression -> Expression
 xlog expr1 = Log (Node _name _value 1) expr1
-    where _value = log (value . node $ expr1); _name = "log(" ++ (name . node $ expr1) ++ ")"
+    where _value = log (value . node $ expr1); _name = hashString ("log(" ++ (name . node $ expr1) ++ ")")
 
 xsin :: Expression -> Expression
 xsin expr1 = Sin (Node _name _value 1) expr1
-    where _value = sin (value . node $ expr1); _name = "sin(" ++ (name . node $ expr1) ++ ")"
+    where _value = sin (value . node $ expr1); _name = hashString ("sin(" ++ (name . node $ expr1) ++ ")")
 
 xcos :: Expression -> Expression
 xcos expr1 = Cos (Node _name _value 1) expr1
-    where _value = cos (value . node $ expr1); _name = "cos(" ++ (name . node $ expr1) ++ ")"
+    where _value = cos (value . node $ expr1); _name = hashString ("cos(" ++ (name . node $ expr1) ++ ")")
 
 xasin :: Expression -> Expression
 xasin expr1 = Asin (Node _name _value 1) expr1
-    where _value = asin (value . node $ expr1); _name = "asin(" ++ (name . node $ expr1) ++ ")"
+    where _value = asin (value . node $ expr1); _name = hashString ("asin(" ++ (name . node $ expr1) ++ ")")
 
 xacos :: Expression -> Expression
 xacos expr1 = Acos (Node _name _value 1) expr1
-    where _value = acos (value . node $ expr1); _name = "acos(" ++ (name . node $ expr1) ++ ")"
+    where _value = acos (value . node $ expr1); _name = hashString ("acos(" ++ (name . node $ expr1) ++ ")")
 
 xatan :: Expression -> Expression
 xatan expr1 = Atan (Node _name _value 1) expr1
-    where _value = atan (value . node $ expr1); _name = "atan(" ++ (name . node $ expr1) ++ ")"
+    where _value = atan (value . node $ expr1); _name = hashString ("atan(" ++ (name . node $ expr1) ++ ")")
 
 xsinh :: Expression -> Expression
 xsinh expr1 = Sinh (Node _name _value 1) expr1
-    where _value = sinh (value . node $ expr1); _name = "sinh(" ++ (name . node $ expr1) ++ ")"
+    where _value = sinh (value . node $ expr1); _name = hashString ("sinh(" ++ (name . node $ expr1) ++ ")")
 
 xcosh :: Expression -> Expression
 xcosh expr1 = Cosh (Node _name _value 1) expr1
-    where _value = cosh (value . node $ expr1); _name = "cosh(" ++ (name . node $ expr1) ++ ")"
+    where _value = cosh (value . node $ expr1); _name = hashString ("cosh(" ++ (name . node $ expr1) ++ ")")
 
 xasinh :: Expression -> Expression
 xasinh expr1 = Asinh (Node _name _value 1) expr1
-    where _value = asinh (value . node $ expr1); _name = "asinh(" ++ (name . node $ expr1) ++ ")"
+    where _value = asinh (value . node $ expr1); _name = hashString ("asinh(" ++ (name . node $ expr1) ++ ")")
 
 xacosh :: Expression -> Expression
 xacosh expr1 = Acosh (Node _name _value 1) expr1
-    where _value = acosh (value . node $ expr1); _name = "acosh(" ++ (name . node $ expr1) ++ ")"
+    where _value = acosh (value . node $ expr1); _name = hashString ("acosh(" ++ (name . node $ expr1) ++ ")")
 
 xatanh :: Expression -> Expression
 xatanh expr1 = Atanh (Node _name _value 1) expr1
-    where _value = atanh (value . node $ expr1); _name = "atanh(" ++ (name . node $ expr1) ++ ")"
+    where _value = atanh (value . node $ expr1); _name = hashString ("atanh(" ++ (name . node $ expr1) ++ ")")
 
 xabs :: Expression -> Expression
 xabs expr1 = Abs (Node _name _value 1) expr1
-    where _value = abs (value . node $ expr1); _name = "abs(" ++ (name . node $ expr1) ++ ")"
+    where _value = abs (value . node $ expr1); _name = hashString ("abs(" ++ (name . node $ expr1) ++ ")")
 
 xsignum :: Expression -> Expression
 xsignum expr1 = Signum (Node _name _value 1) expr1
-    where _value = signum (value . node $ expr1); _name = "signum(" ++ (name . node $ expr1) ++ ")"
+    where _value = signum (value . node $ expr1); _name = hashString ("signum(" ++ (name . node $ expr1) ++ ")")
 
 instance Num Expression where
     (+) = xsum
@@ -252,5 +254,6 @@ ngrad (Abs _node _lhs) _name = if name _node == _name then grad _node else (ngra
 ngrad (Signum _node _lhs) _name = if name _node == _name then grad _node else (ngrad _lhs _name)
 
 gradient :: Expression -> Expression -> Float
-gradient expr1 expr2 = ngrad expr1 (name . node $ expr2)
+gradient expr1 expr2 = _value where
+    _value = (ngrad expr1 (name . node $ expr2));
 

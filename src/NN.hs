@@ -4,8 +4,8 @@ import System.Random
 import Expression
 import Data.Matrix
 
-runif :: Int -> Float -> Float -> IO [Expression]
-runif n l h = do
+runif :: Int -> (Float, Float) -> IO [Expression]
+runif n (l, h) = do
   randomValues <- replicateM n (randomRIO (l, h) :: IO Float)
   randomExpressions <- sequence (fmap param randomValues)
   return randomExpressions
@@ -30,7 +30,7 @@ toVector l = (nodes l) <|> (fromList 1 1 [bias l])
 
 initializeNetwork :: Int -> IO Network
 initializeNetwork n = do
-    node_list <- runif n (-1) 1
+    node_list <- runif n ((-1), 1)
     let nodes = fromList 1 n node_list
     let weights = fromList 1 1 [0]
     let bias = 1.0
@@ -40,13 +40,17 @@ initializeNetwork n = do
 pushLayer :: Int -> (Expression -> Expression) -> Network -> IO Network
 pushLayer n activation net = do
     let net_ncount = ncols . nodes . layer $ net
-    node_list <- runif n (-1) 1
-    weight_list <- runif (n * (net_ncount + 1)) (-1) 1
+    node_list <- runif n ((-1), 1)
+    weight_list <- runif (n * (net_ncount + 1)) ((-1), 1)
     let nodes = fromList 1 n node_list
     let weights = fromList (net_ncount + 1) n weight_list
     let bias = 1.0
     let network = HLayer (Layer nodes weights bias) net activation
     return network
+
+inputSize :: Network -> Int
+inputSize (ILayer l) = ncols . nodes $ l
+inputSize (HLayer _ t _) = inputSize t
 
 forwardPass :: Network -> Matrix Expression -> Network
 forwardPass (ILayer l) input = ILayer (Layer input (fromList 1 1 [0]) 1.0)
@@ -106,3 +110,33 @@ train n net (i, o) rate = do
     nnet <- updateNetwork err net rate
     o <- train (n - 1) nnet (i, o) rate
     return o
+
+
+mtrain :: Int -> Network -> [(Matrix Expression, Matrix Expression)] -> Float -> IO Network
+mtrain 0 net _ _ = return net
+
+mtrain n net arr rate = do
+    let err = overallDeviation net mse arr
+    putStrLn $ "Iteration " ++ (show n) ++ "   Error: " ++ show (evaluate err)
+    nnet <- updateNetwork err net rate
+    o <- mtrain (n - 1) nnet arr rate
+    return o
+
+
+generateTrainingSetA :: Network -> Int -> (Float, Float) -> IO [(Matrix Expression, Matrix Expression)]
+generateTrainingSetA network n maxmin
+    | n <= 0 = do
+        let isize = inputSize network
+        ainput <- runif isize maxmin
+        let input = fromList 1 isize ainput
+        let output = nodes . layer $ (forwardPass network input)
+        let io = [(input, output)]
+        return io
+    | otherwise = do
+        let isize = inputSize network
+        ainput <- runif isize maxmin
+        let input = fromList 1 isize ainput
+        let output = nodes . layer $ (forwardPass network input)
+        let io = [(input, output)]
+        rest <- generateTrainingSetA network (n - 1) maxmin
+        return $ io ++ rest

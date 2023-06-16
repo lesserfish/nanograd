@@ -1,4 +1,4 @@
-# THIS IS OUTDATES
+# THIS IS OUTDATED
 
 For the framework that is currently in development, please check: https://github.com/lesserfish/nanoflow/tree/main
 

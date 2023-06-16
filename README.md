@@ -1,3 +1,8 @@
+# THIS IS OUTDATES
+
+For the framework that is currently in development, please check: https://github.com/lesserfish/nanoflow/tree/main
+
+
 # nanograd
 
 A simple clone of micrograd, but for Haskell.
